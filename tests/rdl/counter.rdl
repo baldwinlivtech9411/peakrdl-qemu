@@ -1,0 +1,6 @@
+addrmap counter_dev {
+    default regwidth = 32;
+    reg {
+        field { sw = rw; counter; } CNT[31:0] = 0;
+    } COUNT @ 0x00;
+};

@@ -1,0 +1,34 @@
+addrmap simple_timer {
+    name = "Simple Timer (phase-1 test device)";
+    default regwidth = 32;
+    default hw = r;
+    qemu_irqs = 1;
+
+    reg {
+        name = "Control";
+        field { sw = rw; } EN[0:0]        = 0;
+        field { sw = rw; } IRQ_EN[1:1]    = 0;
+        field { sw = rw; } PRESCALE[15:8] = 8'h10;
+    } CTRL @ 0x00;   // bits 7:2, 31:16 reserved
+
+    reg {
+        name = "Load";
+        field { sw = rw; } VALUE[31:0] = 32'hFFFF_FFFF;
+    } LOAD @ 0x04;
+
+    reg {
+        name = "Count";
+        field { sw = r; hw = w; } VALUE[31:0] = 0;
+    } COUNT @ 0x08;
+
+    reg {
+        name = "Status";
+        field { sw = rw; hw = w; onwrite = woclr; } EXPIRED[0:0] = 0;
+        field { sw = r;  hw = w; onread = rclr;   } OVERRUN[1:1] = 0;
+    } STATUS @ 0x0C;
+
+    reg {
+        name = "ID";
+        field { sw = r; } ID[31:0] = 32'h5449_4D52;
+    } ID @ 0x10;          // "TIMR"
+};

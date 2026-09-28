@@ -1,0 +1,5 @@
+addrmap shared_pair {
+    default regwidth = 32;
+    reg { field { sw = w; } DATA[7:0]; } TXR @ 0x0C;
+    reg { field { sw = r; } DATA[7:0]; } RXR @ 0x0C;
+};

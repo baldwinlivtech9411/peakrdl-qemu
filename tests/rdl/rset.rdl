@@ -1,0 +1,6 @@
+addrmap rset_dev {
+    default regwidth = 32;
+    reg {
+        field { sw = r; onread = rset; } FLAG[0:0] = 0;
+    } ST @ 0x00;
+};

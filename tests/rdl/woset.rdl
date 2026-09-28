@@ -1,0 +1,6 @@
+addrmap woset_dev {
+    default regwidth = 32;
+    reg {
+        field { sw = rw; onwrite = woset; } FLAG[0:0] = 0;
+    } CTRL @ 0x00;
+};

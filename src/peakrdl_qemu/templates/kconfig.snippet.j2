@@ -1,0 +1,6 @@
+config {{ d.name_upper }}
+    bool
+    select REGISTER
+{% for sel in d.kconfig_selects %}
+    select {{ sel }}
+{% endfor %}

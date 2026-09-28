@@ -1,0 +1,6 @@
+addrmap write_only_dev {
+    default regwidth = 32;
+    reg {
+        field { sw = w; } DATA[7:0];
+    } TX @ 0x00;
+};

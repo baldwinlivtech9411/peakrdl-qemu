@@ -1,0 +1,41 @@
+addrmap m3_features {
+    name = "M3 feature coverage device";
+    default regwidth = 32;
+    default hw = r;
+
+    // Write-only field in a mixed register (post_read masks DATA).
+    reg {
+        name = "Mixed write-only";
+        field { sw = rw; } EN[0:0] = 0;
+        field { sw = w; } DATA[15:8] = 0;
+    } MIXED @ 0x00;
+
+    // onwrite = woset (generated pre_write).
+    reg {
+        name = "Write-one-to-set";
+        field { sw = rw; onwrite = woset; } FLAG[0:0] = 0;
+    } WOSET @ 0x04;
+
+    // onread = rset (generated post_read sets storage after the read).
+    reg {
+        name = "Read-set";
+        field { sw = r; onread = rset; } FLAG[0:0] = 0;
+    } RSET @ 0x08;
+
+    // Shared WO/RO pair (OpenCores-style TXR/RXR).
+    reg {
+        name = "Transmit";
+        field { sw = w; } DATA[7:0] = 0;
+    } TXR @ 0x0C;
+    reg {
+        name = "Receive";
+        field { sw = r; hw = w; } DATA[7:0] = 0;
+    } RXR @ 0x0C;
+
+    // singlepulse on a writable command register.
+    reg {
+        name = "Command";
+        field { sw = rw; singlepulse; } GO[0:0] = 0;
+        field { sw = rw; } ACK[7:7] = 0;
+    } CR @ 0x10;
+};

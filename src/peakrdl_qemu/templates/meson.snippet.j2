@@ -1,0 +1,1 @@
+system_ss.add(when: 'CONFIG_{{ d.name_upper }}', if_true: files('{{ d.name }}_gen.c', '{{ d.name }}_behavior.c'))

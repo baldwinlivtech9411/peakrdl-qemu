@@ -1,0 +1,6 @@
+addrmap regfile_dev {
+    default regwidth = 32;
+    regfile {
+        reg { field { sw = rw; } A[31:0]; } R0 @ 0x00;
+    } GRP @ 0x00;
+};

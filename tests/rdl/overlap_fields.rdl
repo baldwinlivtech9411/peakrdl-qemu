@@ -1,0 +1,7 @@
+addrmap overlap_fields {
+    default regwidth = 32;
+    reg {
+        field { sw = r; hw = w; } F1[7:0];
+        field { sw = w; hw = r; } F2[7:0];
+    } C @ 0x00;
+};

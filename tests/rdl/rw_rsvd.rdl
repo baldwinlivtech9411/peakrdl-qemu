@@ -1,0 +1,6 @@
+addrmap rw_rsvd {
+    default regwidth = 32;
+    reg {
+        field { sw = rw; hw = r; } LOW[3:0] = 0xa;
+    } R @ 0x00;
+};

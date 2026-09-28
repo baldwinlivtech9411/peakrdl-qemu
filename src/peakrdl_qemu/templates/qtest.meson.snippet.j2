@@ -1,0 +1,1 @@
+qtests_riscv64 += (config_all_devices.has_key('CONFIG_{{ d.name_upper }}') ? ['{{ d.qtest_meson_name }}'] : [])

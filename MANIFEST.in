@@ -1,0 +1,5 @@
+recursive-include src/peakrdl_qemu/templates *.j2
+include LICENSE
+include QEMU_VERSION
+include README.md
+include DECISIONS.md

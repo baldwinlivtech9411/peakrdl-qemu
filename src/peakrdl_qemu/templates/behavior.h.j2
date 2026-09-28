@@ -1,0 +1,19 @@
+#ifndef {{ d.name_upper }}_BEHAVIOR_H
+#define {{ d.name_upper }}_BEHAVIOR_H
+
+/* SPDX-License-Identifier: {{ d.license }} */
+
+/*
+ * Behavior state for {{ d.qom_name }}. This file is owned by you: peakrdl-qemu
+ * will not overwrite it once it exists.
+ *
+ * To migrate extra state, define {{ d.name_upper }}_BEHAVIOR_HAS_VMSTATE and
+ * provide a VMStateDescription named vmstate_{{ d.name }}_behavior.
+ */
+
+typedef struct {{ d.behavior_type }} {
+    /* user fields */
+    int _unused;
+} {{ d.behavior_type }};
+
+#endif /* {{ d.name_upper }}_BEHAVIOR_H */

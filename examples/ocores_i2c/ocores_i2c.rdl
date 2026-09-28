@@ -1,0 +1,53 @@
+addrmap ocores_i2c {
+    name = "OpenCores I2C Master";
+    desc = "Wishbone I2C master, 32-bit register spacing (reg-shift = 2)";
+    default regwidth = 32;
+    default hw = r;
+    qemu_irqs = 1;
+
+    // Prescale. Hardware default is 0xFFFF.
+    reg {
+        qemu_no_write_hook;
+        field { sw = rw; } PRE[7:0] = 8'hff;
+    } PRERLO @ 0x00;
+
+    reg {
+        qemu_no_write_hook;
+        field { sw = rw; } PRE[7:0] = 8'hff;
+    } PRERHI @ 0x04;
+
+    // EN = bit 7, IEN = bit 6 (Linux OCI2C_CTRL_*)
+    reg {
+        field { sw = rw; } IEN[6:6] = 0;
+        field { sw = rw; } EN[7:7]  = 0;
+    } CTR @ 0x08;
+
+    // Shared DATA register: TXR write-only, RXR read-only
+    reg {
+        qemu_no_write_hook;
+        field { sw = w; hw = r; } DATA[7:0];
+    } TXR @ 0x0C;
+
+    reg {
+        field { sw = r; hw = w; } DATA[7:0];
+    } RXR @ 0x0C;
+
+    // Command (write) / Status (read) at the same address
+    // STA/STO/RD/WR/IACK are singlepulse; ACK is a level for the next read.
+    reg {
+        field { sw = w; singlepulse; } IACK[0:0] = 0;
+        field { sw = w; }              ACK[3:3] = 0;
+        field { sw = w; singlepulse; } WR[4:4] = 0;
+        field { sw = w; singlepulse; } RD[5:5] = 0;
+        field { sw = w; singlepulse; } STO[6:6] = 0;
+        field { sw = w; singlepulse; } STA[7:7] = 0;
+    } CR @ 0x10;
+
+    reg {
+        field { sw = r; hw = w; } IF[0:0];
+        field { sw = r; hw = w; } TIP[1:1];
+        field { sw = r; hw = w; } AL[5:5];
+        field { sw = r; hw = w; } BUSY[6:6];
+        field { sw = r; hw = w; } RXACK[7:7];
+    } SR @ 0x10;
+};

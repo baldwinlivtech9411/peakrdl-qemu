@@ -1,0 +1,11 @@
+addrmap onwrite_rest {
+    default regwidth = 32;
+    reg {
+        field { sw = rw; onwrite = wot; } A[0:0] = 0;
+        field { sw = rw; onwrite = wzc; } B[1:1] = 0;
+        field { sw = rw; onwrite = wzs; } C[2:2] = 0;
+        field { sw = rw; onwrite = wclr; } D[3:3] = 0;
+        field { sw = rw; onwrite = wset; } E[4:4] = 0;
+        field { sw = rw; onwrite = wzt; } F[5:5] = 0;
+    } OW @ 0x00;
+};

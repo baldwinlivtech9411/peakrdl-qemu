@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "peakrdl-qemu"
+version = "0.1.0"
+description = "PeakRDL exporter that generates QEMU device models from SystemRDL"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "peakrdl-qemu contributors"},
+]
+keywords = ["SystemRDL", "PeakRDL", "QEMU", "registers", "generator"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",
+]
+dependencies = [
+    "systemrdl-compiler>=1.27",
+    "peakrdl>=1.2",
+    "jinja2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[project.urls]
+Source = "https://github.com/peakrdl-qemu/peakrdl-qemu"
+
+[project.entry-points."peakrdl.exporters"]
+qemu = "peakrdl_qemu.__peakrdl__:Exporter"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+peakrdl_qemu = ["templates/*.j2", "qemu_udps.rdl"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

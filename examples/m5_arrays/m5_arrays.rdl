@@ -1,0 +1,21 @@
+addrmap m5_arrays {
+    name = "M5 array and regfile coverage device";
+    default regwidth = 32;
+    default hw = r;
+
+    // Unrolled register array: DATA_0 .. DATA_3 at 0x00 += 4
+    reg {
+        field { sw = rw; } VALUE[31:0] = 0;
+    } DATA[4] @ 0x00;
+
+    // Flattened regfile
+    regfile {
+        reg { field { sw = rw; } A[31:0] = 0; } R0 @ 0x00;
+        reg { field { sw = rw; } B[31:0] = 0; } R1 @ 0x04;
+    } GRP @ 0x100;
+
+    // Array of regfiles
+    regfile {
+        reg { field { sw = rw; } X[31:0] = 0; } V @ 0x00;
+    } BANK[2] @ 0x200 += 0x10;
+};

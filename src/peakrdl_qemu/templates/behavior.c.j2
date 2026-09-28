@@ -1,0 +1,31 @@
+/* SPDX-License-Identifier: {{ d.license }} */
+
+/*
+ * Behavior stubs for {{ d.qom_name }}. This file is owned by you: peakrdl-qemu
+ * will not overwrite it once it exists.
+ */
+
+#include "qemu/osdep.h"
+#include "hw/{{ d.qemu_subdir }}/{{ d.name }}.h"
+
+{% for h in d.hooks %}
+{% if h.kind == 'read' %}
+{{ h.signature }}
+{
+    /* TODO: implement */
+    (void)s;
+    return val;
+}
+
+{% else %}
+{{ h.signature }}
+{
+    /* TODO: implement */
+    (void)s;
+{% if h.kind == 'write' %}
+    (void)val;
+{% endif %}
+}
+
+{% endif %}
+{% endfor %}

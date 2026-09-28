@@ -1,0 +1,8 @@
+addrmap mem_dev {
+    default regwidth = 32;
+    reg { field { sw = rw; } A[31:0]; } R0 @ 0x00;
+    external mem {
+        mementries = 16;
+        memwidth = 32;
+    } BUF @ 0x100;
+};

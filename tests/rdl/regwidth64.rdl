@@ -1,0 +1,6 @@
+addrmap wide_dev {
+    reg {
+        regwidth = 64;
+        field { sw = rw; } VALUE[63:0];
+    } WIDE @ 0x00;
+};

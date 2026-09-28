@@ -1,0 +1,23 @@
+/*
+ * Optional UDP declarations for users who call systemrdl-compiler directly
+ * without going through the PeakRDL `qemu` subcommand.
+ *
+ * The PeakRDL plugin registers these as hard UDPs, so this file is not needed
+ * when using `peakrdl qemu`. Do not compile it together with the plugin's
+ * hard UDPs — the definitions would conflict.
+ */
+property qemu_irqs {
+    type = longint;
+    component = addrmap;
+    default = 0;
+};
+property qemu_read_hook {
+    type = boolean;
+    component = reg;
+    default = false;
+};
+property qemu_no_write_hook {
+    type = boolean;
+    component = reg;
+    default = false;
+};

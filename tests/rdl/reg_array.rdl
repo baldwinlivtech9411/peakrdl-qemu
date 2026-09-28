@@ -1,0 +1,6 @@
+addrmap array_dev {
+    default regwidth = 32;
+    reg {
+        field { sw = rw; } VALUE[31:0];
+    } DATA[4] @ 0x00;
+};
