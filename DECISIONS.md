@@ -267,3 +267,16 @@ skips without `OCORES_KERNEL`/`OCORES_ROOTFS`). Default M6 gate is
 `ci/m6_smoke.sh`, which drives the **same CR/SR protocol as Linux
 i2c-ocores** against tmp105 (detect 0x48, NACK absent addr, pointer write,
 read 0 C).
+
+## RISC-V guest firmware
+
+Host qtest pokes MMIO without a hart. `examples/riscv-guest/` is a
+freestanding rv64gc binary (`-bios none -kernel firmware.elf`) that
+issues `lw`/`sw` to simple-timer (`0x102000`) and OpenCores I2C
+(`0x103000`). UART is NS16550 at `0x10000000`; the firmware exits QEMU
+through SiFive test (`0x100000`, `0x5555` / `0x3333`).
+
+The I2C sequence matches Linux `i2c-ocores` / `ocores_i2c-test.c`
+(enable, detect 0x48, NACK 0x22, pointer write, read 0 C). CI job
+`riscv-guest` applies `m6-virt-ocores-i2c.patch` and runs
+`ci/riscv_guest_smoke.sh`.

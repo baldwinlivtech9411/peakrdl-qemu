@@ -43,8 +43,19 @@ and raises the IRQ when `CTR.IEN` is set. Transfers complete immediately
 
 ## Tests
 
+
+Host qtest (no guest CPU):
+
 ```shell
 QEMU_SRC=/path/to/qemu ninja -C $QEMU_SRC/build tests/qtest/ocores_i2c-test
 QTEST_QEMU_BINARY=$QEMU_SRC/build/qemu-system-riscv64 \
     $QEMU_SRC/build/tests/qtest/ocores_i2c-test --tap -k
 ```
+
+RISC-V hart using the IP over MMIO:
+
+```shell
+QEMU_SRC=/path/to/qemu ./ci/riscv_guest_smoke.sh
+```
+
+See [examples/riscv-guest](../riscv-guest/).

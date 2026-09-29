@@ -51,3 +51,38 @@ jobs:
             "${HOME}/src/qemu/hw/misc/simple_timer_gen.c"
       - name: Smoke
         run: QEMU_SRC="${HOME}/src/qemu" ./ci/phase1_smoke.sh
+
+  riscv-guest:
+    runs-on: ubuntu-latest
+    needs: pytest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build meson pkg-config gcc flex bison \
+            libglib2.0-dev libpixman-1-dev libfdt-dev perl \
+            gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
+      - name: Install exporter
+        run: pip install -e ".[dev]"
+      - name: Build pinned QEMU
+        run: ./ci/build_qemu.sh
+      - name: Generate devices and patch virt
+        run: |
+          peakrdl qemu examples/simple_timer/simple_timer.rdl \
+            -o out/simple_timer --apply-to "${HOME}/src/qemu"
+          peakrdl qemu examples/ocores_i2c/ocores_i2c.rdl \
+            -o out/ocores_i2c --qemu-subdir i2c \
+            --kconfig-select I2C --kconfig-select I2C_DEVICES \
+            --apply-to "${HOME}/src/qemu"
+          cp examples/ocores_i2c/ocores_i2c_behavior.c \
+             examples/ocores_i2c/ocores_i2c_behavior.h \
+             "${HOME}/src/qemu/hw/i2c/"
+          git -C "${HOME}/src/qemu" apply "${PWD}/qemu-patches/m6-virt-ocores-i2c.patch"
+      - name: Rebuild QEMU
+        run: ninja -C "${HOME}/src/qemu/build" -j"$(nproc)"
+      - name: RISC-V guest MMIO smoke
+        run: QEMU_SRC="${HOME}/src/qemu" ./ci/riscv_guest_smoke.sh

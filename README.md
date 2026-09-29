@@ -83,6 +83,14 @@ reserved bits, hardware-writable fields, and one IRQ.
 
 M6 demo: `examples/ocores_i2c/` is a working OpenCores I2C master (RDL + behavior + virt DT + tmp105@0x48). See that directory's README.
 
+A RISC-V **hart** (not host qtest) drives those devices in
+[`examples/riscv-guest/`](examples/riscv-guest/): `-kernel firmware.elf`
+loads and stores `0x102000` / `0x103000` and reads tmp105 over I2C MMIO.
+
+```shell
+QEMU_SRC=$HOME/src/qemu ./ci/riscv_guest_smoke.sh
+```
+
 After `--apply-to` plus
 [`qemu-patches/phase1-virt-simple-timer.patch`](qemu-patches/phase1-virt-simple-timer.patch)
 the device sits on RISC-V `virt` at **0x102000**, IRQ 12.

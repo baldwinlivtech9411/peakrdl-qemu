@@ -9,3 +9,5 @@ out/
 *.qcow2
 .venv/
 venv/
+examples/riscv-guest/firmware.elf
+examples/riscv-guest/firmware.bin
