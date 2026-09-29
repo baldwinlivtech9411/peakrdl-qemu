@@ -1,39 +1,39 @@
-[1mdiff --git a/hw/riscv/Kconfig b/hw/riscv/Kconfig[m
-[1mindex fc9c35b..6b264f8 100644[m
-[1m--- a/hw/riscv/Kconfig[m
-[1m+++ b/hw/riscv/Kconfig[m
-[36m@@ -62,6 +62,7 @@[m [mconfig RISCV_VIRT[m
-     select RISCV_IMSIC[m
-     select SIFIVE_PLIC[m
-     select SIFIVE_TEST[m
-[32m+[m[32m    select SIMPLE_TIMER[m
-     select SMBIOS[m
-     select VIRTIO_MMIO[m
-     select FW_CFG_DMA[m
-[1mdiff --git a/hw/riscv/virt.c b/hw/riscv/virt.c[m
-[1mindex 1790920..4cfe803 100644[m
-[1m--- a/hw/riscv/virt.c[m
-[1m+++ b/hw/riscv/virt.c[m
-[36m@@ -43,6 +43,7 @@[m
- #include "hw/intc/riscv_aplic.h"[m
- #include "hw/intc/sifive_plic.h"[m
- #include "hw/misc/sifive_test.h"[m
-[32m+[m[32m#include "hw/misc/simple_timer.h"[m
- #include "hw/platform-bus.h"[m
- #include "chardev/char.h"[m
- #include "system/device_tree.h"[m
-[36m@@ -1708,6 +1709,14 @@[m [mstatic void virt_machine_init(MachineState *machine)[m
-     sysbus_create_simple("goldfish_rtc", s->memmap[VIRT_RTC].base,[m
-         qdev_get_gpio_in(mmio_irqchip, RTC_IRQ));[m
- [m
-[32m+[m[32m    /*[m
-[32m+[m[32m     * peakrdl-qemu phase-1 test device. 0x102000 sits in the unused gap[m
-[32m+[m[32m     * after goldfish RTC (0x101000 + 0x1000) and before CLINT (0x2000000).[m
-[32m+[m[32m     * IRQ 12 is unused (UART0=10, RTC=11).[m
-[32m+[m[32m     */[m
-[32m+[m[32m    sysbus_create_simple(TYPE_SIMPLE_TIMER, 0x102000,[m
-[32m+[m[32m                         qdev_get_gpio_in(mmio_irqchip, 12));[m
-[32m+[m
-     for (i = 0; i < ARRAY_SIZE(s->flash); i++) {[m
-         /* Map legacy -drive if=pflash to machine properties */[m
-         pflash_cfi01_legacy_drive(s->flash[i],[m
+diff --git a/hw/riscv/Kconfig b/hw/riscv/Kconfig
+index fc9c35b..6b264f8 100644
+--- a/hw/riscv/Kconfig
++++ b/hw/riscv/Kconfig
+@@ -62,6 +62,7 @@ config RISCV_VIRT
+     select RISCV_IMSIC
+     select SIFIVE_PLIC
+     select SIFIVE_TEST
++    select SIMPLE_TIMER
+     select SMBIOS
+     select VIRTIO_MMIO
+     select FW_CFG_DMA
+diff --git a/hw/riscv/virt.c b/hw/riscv/virt.c
+index 1790920..4cfe803 100644
+--- a/hw/riscv/virt.c
++++ b/hw/riscv/virt.c
+@@ -43,6 +43,7 @@
+ #include "hw/intc/riscv_aplic.h"
+ #include "hw/intc/sifive_plic.h"
+ #include "hw/misc/sifive_test.h"
++#include "hw/misc/simple_timer.h"
+ #include "hw/platform-bus.h"
+ #include "chardev/char.h"
+ #include "system/device_tree.h"
+@@ -1708,6 +1709,14 @@ static void virt_machine_init(MachineState *machine)
+     sysbus_create_simple("goldfish_rtc", s->memmap[VIRT_RTC].base,
+         qdev_get_gpio_in(mmio_irqchip, RTC_IRQ));
+ 
++    /*
++     * peakrdl-qemu phase-1 test device. 0x102000 sits in the unused gap
++     * after goldfish RTC (0x101000 + 0x1000) and before CLINT (0x2000000).
++     * IRQ 12 is unused (UART0=10, RTC=11).
++     */
++    sysbus_create_simple(TYPE_SIMPLE_TIMER, 0x102000,
++                         qdev_get_gpio_in(mmio_irqchip, 12));
++
+     for (i = 0; i < ARRAY_SIZE(s->flash); i++) {
+         /* Map legacy -drive if=pflash to machine properties */
+         pflash_cfi01_legacy_drive(s->flash[i],

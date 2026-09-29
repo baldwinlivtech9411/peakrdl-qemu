@@ -1,104 +1,104 @@
-[1mdiff --git a/hw/riscv/Kconfig b/hw/riscv/Kconfig[m
-[1mindex fc9c35b..666c493 100644[m
-[1m--- a/hw/riscv/Kconfig[m
-[1m+++ b/hw/riscv/Kconfig[m
-[36m@@ -62,6 +62,8 @@[m [mconfig RISCV_VIRT[m
-     select RISCV_IMSIC[m
-     select SIFIVE_PLIC[m
-     select SIFIVE_TEST[m
-[32m+[m[32m    select SIMPLE_TIMER[m
-[32m+[m[32m    select OCORES_I2C[m
-     select SMBIOS[m
-     select VIRTIO_MMIO[m
-     select FW_CFG_DMA[m
-[1mdiff --git a/hw/riscv/virt.c b/hw/riscv/virt.c[m
-[1mindex 1790920..f524b95 100644[m
-[1m--- a/hw/riscv/virt.c[m
-[1m+++ b/hw/riscv/virt.c[m
-[36m@@ -43,6 +43,10 @@[m
- #include "hw/intc/riscv_aplic.h"[m
- #include "hw/intc/sifive_plic.h"[m
- #include "hw/misc/sifive_test.h"[m
-[32m+[m[32m#include "hw/misc/simple_timer.h"[m
-[32m+[m[32m#include "hw/i2c/i2c.h"[m
-[32m+[m[32m#include "hw/i2c/ocores_i2c.h"[m
-[32m+[m[32m#include "hw/sensor/tmp105.h"[m
- #include "hw/platform-bus.h"[m
- #include "chardev/char.h"[m
- #include "system/device_tree.h"[m
-[36m@@ -981,6 +985,43 @@[m [mstatic void create_fdt_uart(RISCVVirtState *s,[m
-     qemu_fdt_setprop_string(ms->fdt, "/aliases", "serial0", name);[m
- }[m
- [m
-[32m+[m
-[32m+[m[32m#define OCORES_I2C_BASE  0x103000[m
-[32m+[m[32m#define OCORES_I2C_IRQ   13[m
-[32m+[m[32m#define OCORES_I2C_SIZE  0x14[m
-[32m+[m
-[32m+[m[32mstatic void create_fdt_ocores_i2c(RISCVVirtState *s, uint32_t irq_mmio_phandle)[m
-[32m+[m[32m{[m
-[32m+[m[32m    g_autofree char *name = NULL;[m
-[32m+[m[32m    g_autofree char *tmp = NULL;[m
-[32m+[m[32m    MachineState *ms = MACHINE(s);[m
-[32m+[m
-[32m+[m[32m    name = g_strdup_printf("/soc/i2c@%" PRIx64, (uint64_t)OCORES_I2C_BASE);[m
-[32m+[m[32m    qemu_fdt_add_subnode(ms->fdt, name);[m
-[32m+[m[32m    qemu_fdt_setprop_string(ms->fdt, name, "compatible",[m
-[32m+[m[32m                            "opencores,i2c-ocores");[m
-[32m+[m[32m    qemu_fdt_setprop_sized_cells(ms->fdt, name, "reg",[m
-[32m+[m[32m                                 2, OCORES_I2C_BASE, 2, OCORES_I2C_SIZE);[m
-[32m+[m[32m    qemu_fdt_setprop_cell(ms->fdt, name, "interrupt-parent", irq_mmio_phandle);[m
-[32m+[m[32m    if (s->aia_type == VIRT_AIA_TYPE_NONE) {[m
-[32m+[m[32m        qemu_fdt_setprop_cell(ms->fdt, name, "interrupts", OCORES_I2C_IRQ);[m
-[32m+[m[32m    } else {[m
-[32m+[m[32m        qemu_fdt_setprop_cells(ms->fdt, name, "interrupts", OCORES_I2C_IRQ, 0x4);[m
-[32m+[m[32m    }[m
-[32m+[m[32m    qemu_fdt_setprop_cell(ms->fdt, name, "reg-shift", 2);[m
-[32m+[m[32m    qemu_fdt_setprop_cell(ms->fdt, name, "reg-io-width", 4);[m
-[32m+[m[32m    qemu_fdt_setprop_cell(ms->fdt, name, "opencores,ip-clock-frequency",[m
-[32m+[m[32m                          20000000);[m
-[32m+[m[32m    qemu_fdt_setprop_cell(ms->fdt, name, "clock-frequency", 100000);[m
-[32m+[m[32m    qemu_fdt_setprop_cell(ms->fdt, name, "#address-cells", 1);[m
-[32m+[m[32m    qemu_fdt_setprop_cell(ms->fdt, name, "#size-cells", 0);[m
-[32m+[m
-[32m+[m[32m    tmp = g_strdup_printf("%s/tmp105@48", name);[m
-[32m+[m[32m    qemu_fdt_add_subnode(ms->fdt, tmp);[m
-[32m+[m[32m    qemu_fdt_setprop_string(ms->fdt, tmp, "compatible", "ti,tmp105");[m
-[32m+[m[32m    qemu_fdt_setprop_cells(ms->fdt, tmp, "reg", 0x48);[m
-[32m+[m[32m}[m
-[32m+[m
- static void create_fdt_rtc(RISCVVirtState *s,[m
-                            uint32_t irq_mmio_phandle)[m
- {[m
-[36m@@ -1151,6 +1192,8 @@[m [mstatic void finalize_fdt(RISCVVirtState *s)[m
-     create_fdt_uart(s, irq_mmio_phandle);[m
- [m
-     create_fdt_rtc(s, irq_mmio_phandle);[m
-[32m+[m
-[32m+[m[32m    create_fdt_ocores_i2c(s, irq_mmio_phandle);[m
- }[m
- [m
- static void create_fdt(RISCVVirtState *s)[m
-[36m@@ -1708,6 +1751,22 @@[m [mstatic void virt_machine_init(MachineState *machine)[m
-     sysbus_create_simple("goldfish_rtc", s->memmap[VIRT_RTC].base,[m
-         qdev_get_gpio_in(mmio_irqchip, RTC_IRQ));[m
- [m
-[32m+[m[32m    /*[m
-[32m+[m[32m     * peakrdl-qemu phase-1 test device. 0x102000 sits in the unused gap[m
-[32m+[m[32m     * after goldfish RTC (0x101000 + 0x1000) and before CLINT (0x2000000).[m
-[32m+[m[32m     * IRQ 12 is unused (UART0=10, RTC=11).[m
-[32m+[m[32m     */[m
-[32m+[m[32m    sysbus_create_simple(TYPE_SIMPLE_TIMER, 0x102000,[m
-[32m+[m[32m                         qdev_get_gpio_in(mmio_irqchip, 12));[m
-[32m+[m[32m    {[m
-[32m+[m[32m        DeviceState *i2c_dev = sysbus_create_simple(TYPE_OCORES_I2C,[m
-[32m+[m[32m                                                    OCORES_I2C_BASE,[m
-[32m+[m[32m                                                    qdev_get_gpio_in(mmio_irqchip,[m
-[32m+[m[32m                                                                     OCORES_I2C_IRQ));[m
-[32m+[m[32m        I2CBus *i2c = I2C_BUS(qdev_get_child_bus(i2c_dev, "i2c"));[m
-[32m+[m[32m        i2c_slave_create_simple(i2c, TYPE_TMP105, 0x48);[m
-[32m+[m[32m    }[m
-[32m+[m
-     for (i = 0; i < ARRAY_SIZE(s->flash); i++) {[m
-         /* Map legacy -drive if=pflash to machine properties */[m
-         pflash_cfi01_legacy_drive(s->flash[i],[m
+diff --git a/hw/riscv/Kconfig b/hw/riscv/Kconfig
+index fc9c35b..666c493 100644
+--- a/hw/riscv/Kconfig
++++ b/hw/riscv/Kconfig
+@@ -62,6 +62,8 @@ config RISCV_VIRT
+     select RISCV_IMSIC
+     select SIFIVE_PLIC
+     select SIFIVE_TEST
++    select SIMPLE_TIMER
++    select OCORES_I2C
+     select SMBIOS
+     select VIRTIO_MMIO
+     select FW_CFG_DMA
+diff --git a/hw/riscv/virt.c b/hw/riscv/virt.c
+index 1790920..f524b95 100644
+--- a/hw/riscv/virt.c
++++ b/hw/riscv/virt.c
+@@ -43,6 +43,10 @@
+ #include "hw/intc/riscv_aplic.h"
+ #include "hw/intc/sifive_plic.h"
+ #include "hw/misc/sifive_test.h"
++#include "hw/misc/simple_timer.h"
++#include "hw/i2c/i2c.h"
++#include "hw/i2c/ocores_i2c.h"
++#include "hw/sensor/tmp105.h"
+ #include "hw/platform-bus.h"
+ #include "chardev/char.h"
+ #include "system/device_tree.h"
+@@ -981,6 +985,43 @@ static void create_fdt_uart(RISCVVirtState *s,
+     qemu_fdt_setprop_string(ms->fdt, "/aliases", "serial0", name);
+ }
+ 
++
++#define OCORES_I2C_BASE  0x103000
++#define OCORES_I2C_IRQ   13
++#define OCORES_I2C_SIZE  0x14
++
++static void create_fdt_ocores_i2c(RISCVVirtState *s, uint32_t irq_mmio_phandle)
++{
++    g_autofree char *name = NULL;
++    g_autofree char *tmp = NULL;
++    MachineState *ms = MACHINE(s);
++
++    name = g_strdup_printf("/soc/i2c@%" PRIx64, (uint64_t)OCORES_I2C_BASE);
++    qemu_fdt_add_subnode(ms->fdt, name);
++    qemu_fdt_setprop_string(ms->fdt, name, "compatible",
++                            "opencores,i2c-ocores");
++    qemu_fdt_setprop_sized_cells(ms->fdt, name, "reg",
++                                 2, OCORES_I2C_BASE, 2, OCORES_I2C_SIZE);
++    qemu_fdt_setprop_cell(ms->fdt, name, "interrupt-parent", irq_mmio_phandle);
++    if (s->aia_type == VIRT_AIA_TYPE_NONE) {
++        qemu_fdt_setprop_cell(ms->fdt, name, "interrupts", OCORES_I2C_IRQ);
++    } else {
++        qemu_fdt_setprop_cells(ms->fdt, name, "interrupts", OCORES_I2C_IRQ, 0x4);
++    }
++    qemu_fdt_setprop_cell(ms->fdt, name, "reg-shift", 2);
++    qemu_fdt_setprop_cell(ms->fdt, name, "reg-io-width", 4);
++    qemu_fdt_setprop_cell(ms->fdt, name, "opencores,ip-clock-frequency",
++                          20000000);
++    qemu_fdt_setprop_cell(ms->fdt, name, "clock-frequency", 100000);
++    qemu_fdt_setprop_cell(ms->fdt, name, "#address-cells", 1);
++    qemu_fdt_setprop_cell(ms->fdt, name, "#size-cells", 0);
++
++    tmp = g_strdup_printf("%s/tmp105@48", name);
++    qemu_fdt_add_subnode(ms->fdt, tmp);
++    qemu_fdt_setprop_string(ms->fdt, tmp, "compatible", "ti,tmp105");
++    qemu_fdt_setprop_cells(ms->fdt, tmp, "reg", 0x48);
++}
++
+ static void create_fdt_rtc(RISCVVirtState *s,
+                            uint32_t irq_mmio_phandle)
+ {
+@@ -1151,6 +1192,8 @@ static void finalize_fdt(RISCVVirtState *s)
+     create_fdt_uart(s, irq_mmio_phandle);
+ 
+     create_fdt_rtc(s, irq_mmio_phandle);
++
++    create_fdt_ocores_i2c(s, irq_mmio_phandle);
+ }
+ 
+ static void create_fdt(RISCVVirtState *s)
+@@ -1708,6 +1751,22 @@ static void virt_machine_init(MachineState *machine)
+     sysbus_create_simple("goldfish_rtc", s->memmap[VIRT_RTC].base,
+         qdev_get_gpio_in(mmio_irqchip, RTC_IRQ));
+ 
++    /*
++     * peakrdl-qemu phase-1 test device. 0x102000 sits in the unused gap
++     * after goldfish RTC (0x101000 + 0x1000) and before CLINT (0x2000000).
++     * IRQ 12 is unused (UART0=10, RTC=11).
++     */
++    sysbus_create_simple(TYPE_SIMPLE_TIMER, 0x102000,
++                         qdev_get_gpio_in(mmio_irqchip, 12));
++    {
++        DeviceState *i2c_dev = sysbus_create_simple(TYPE_OCORES_I2C,
++                                                    OCORES_I2C_BASE,
++                                                    qdev_get_gpio_in(mmio_irqchip,
++                                                                     OCORES_I2C_IRQ));
++        I2CBus *i2c = I2C_BUS(qdev_get_child_bus(i2c_dev, "i2c"));
++        i2c_slave_create_simple(i2c, TYPE_TMP105, 0x48);
++    }
++
+     for (i = 0; i < ARRAY_SIZE(s->flash); i++) {
+         /* Map legacy -drive if=pflash to machine properties */
+         pflash_cfi01_legacy_drive(s->flash[i],
